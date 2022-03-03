@@ -1,4 +1,4 @@
-package json
+package jsonutil
 
 import (
 	"bytes"
@@ -152,6 +152,14 @@ func EncodeStdlib(out io.Writer, obj interface{}) error {
 	return EncodeGeneric(out, obj, json.Marshal)
 }
 
+func NewStdlibStreamEncoder(out io.Writer, array bool) *StreamEncoder {
+	return NewStreamEncoder(out, json.Marshal, array)
+}
+
 func EncodeGoccy(out io.Writer, obj interface{}) error {
 	return EncodeGeneric(out, obj, goccy_json.Marshal)
+}
+
+func NewGoccyStreamEncoder(out io.Writer, array bool) *StreamEncoder {
+	return NewStreamEncoder(out, goccy_json.Marshal, array)
 }

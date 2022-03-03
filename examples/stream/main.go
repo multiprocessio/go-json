@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	
 	"github.com/multiprocessio/go-json"
@@ -14,8 +15,16 @@ func main() {
 	}
 
 	out := os.Stdout // Can be any io.Writer
-	
-	err := jsonutil.EncodeStdlib(out, data)
+
+	encoder := jsonutil.NewStdlibStreamEncoder(out, true)
+	for _, row := range data {
+		err := encoder.EncodeRow(row)
+		if err != nil{
+			panic(err)
+		}
+	}
+
+	err := encoder.Close()
 	if err != nil {
 		panic(err)
 	}
