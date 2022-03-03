@@ -13,22 +13,22 @@ import (
 type Marshaler func(interface{}) ([]byte, error)
 
 type StreamEncoder struct {
-	buf *bytes.Buffer
-	w     io.Writer
-	first bool
-	array bool
+	buf           *bytes.Buffer
+	w             io.Writer
+	first         bool
+	array         bool
 	quotedColumns map[string][]byte
-	marshalFn Marshaler
+	marshalFn     Marshaler
 }
 
 func NewStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *StreamEncoder {
 	return &StreamEncoder{
-		buf: bytes.NewBuffer(nil),
-		w: w,
-		first: true,
-		array: array,
+		buf:           bytes.NewBuffer(nil),
+		w:             w,
+		first:         true,
+		array:         array,
 		quotedColumns: map[string][]byte{},
-		marshalFn: marshalFn,
+		marshalFn:     marshalFn,
 	}
 }
 
@@ -137,7 +137,7 @@ func EncodeGeneric(out io.Writer, obj interface{}, marshalFn Marshaler) error {
 		return nil
 	}
 
-	encoder := NewStreamEncoder(out, marshalFn, true)	
+	encoder := NewStreamEncoder(out, marshalFn, true)
 	for _, row := range a {
 		err := encoder.EncodeRow(row)
 		if err != nil {

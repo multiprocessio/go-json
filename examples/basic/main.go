@@ -2,7 +2,7 @@ package main
 
 import (
 	"os"
-	
+
 	"github.com/multiprocessio/go-json"
 )
 
@@ -14,7 +14,7 @@ func main() {
 	}
 
 	out := os.Stdout // Can be any io.Writer
-	
+
 	err := jsonutil.EncodeStdlib(out, data)
 	if err != nil {
 		panic(err)
