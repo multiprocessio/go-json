@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"os"
 	
 	"github.com/multiprocessio/go-json"
