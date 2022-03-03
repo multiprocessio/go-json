@@ -13,7 +13,7 @@ columns in the object grow.
 If you have a whole large array at once, there is a helper function
 for writing it all out at once.
 
-```
+```go
 package main
 
 import (
@@ -44,7 +44,7 @@ If you are streaming data, there is also support for stream encoding
 with this library:
 
 
-```
+```go
 package main
 
 import (
