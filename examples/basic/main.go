@@ -15,7 +15,7 @@ func main() {
 
 	out := os.Stdout // Can be any io.Writer
 
-	err := jsonutil.EncodeStdlib(out, data)
+	err := jsonutil.Encode(out, data)
 	if err != nil {
 		panic(err)
 	}

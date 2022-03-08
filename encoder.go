@@ -21,7 +21,7 @@ type StreamEncoder struct {
 	marshalFn     Marshaler
 }
 
-func NewStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *StreamEncoder {
+func NewGenericStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *StreamEncoder {
 	return &StreamEncoder{
 		buf:           bytes.NewBuffer(nil),
 		w:             w,
@@ -105,6 +105,13 @@ func (sw *StreamEncoder) EncodeRow(row interface{}) error {
 }
 
 func (sw *StreamEncoder) Close() error {
+	// Handle case of EncodeRow never called
+	if sw.first {
+		err := sw.buf.WriteByte('[')
+		if err != nil {
+			return err
+		}
+	}
 	err := sw.buf.WriteByte(']')
 
 	for sw.buf.Len() > 0 {
@@ -137,7 +144,7 @@ func EncodeGeneric(out io.Writer, obj interface{}, marshalFn Marshaler) error {
 		return nil
 	}
 
-	encoder := NewStreamEncoder(out, marshalFn, true)
+	encoder := NewGenericStreamEncoder(out, marshalFn, true)
 	for _, row := range a {
 		err := encoder.EncodeRow(row)
 		if err != nil {
@@ -153,13 +160,13 @@ func EncodeStdlib(out io.Writer, obj interface{}) error {
 }
 
 func NewStdlibStreamEncoder(out io.Writer, array bool) *StreamEncoder {
-	return NewStreamEncoder(out, json.Marshal, array)
+	return NewGenericStreamEncoder(out, json.Marshal, array)
 }
 
-func EncodeGoccy(out io.Writer, obj interface{}) error {
+func Encode(out io.Writer, obj interface{}) error {
 	return EncodeGeneric(out, obj, goccy_json.Marshal)
 }
 
-func NewGoccyStreamEncoder(out io.Writer, array bool) *StreamEncoder {
-	return NewStreamEncoder(out, goccy_json.Marshal, array)
+func NewStreamEncoder(out io.Writer, array bool) *StreamEncoder {
+	return NewGenericStreamEncoder(out, goccy_json.Marshal, array)
 }

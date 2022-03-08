@@ -15,7 +15,7 @@ func main() {
 
 	out := os.Stdout // Can be any io.Writer
 
-	encoder := jsonutil.NewStdlibStreamEncoder(out, true)
+	encoder := jsonutil.NewStreamEncoder(out, true)
 	for _, row := range data {
 		err := encoder.EncodeRow(row)
 		if err != nil {
