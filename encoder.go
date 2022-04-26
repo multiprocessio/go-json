@@ -32,7 +32,19 @@ func NewGenericStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *Stre
 	}
 }
 
+func (sw *StreamEncoder) SetFirst(first bool) *StreamEncoder {
+	sw.first = first
+	return sw
+}
+
+func (sw *StreamEncoder) SetArray(array bool) *StreamEncoder {
+	sw.array = array
+	return sw
+}
+
 var commaNl = []byte(",\n")
+
+const bufLimit = 64 * 1024 // 64kB. Need more testing on this number.
 
 func (sw *StreamEncoder) EncodeRow(row interface{}) error {
 	if !sw.first {
@@ -101,18 +113,38 @@ func (sw *StreamEncoder) EncodeRow(row interface{}) error {
 		}
 	}
 
-	return sw.buf.WriteByte('}')
+	if err := sw.buf.WriteByte('}'); err != nil {
+		return err
+	}
+
+	// Prevents buf from growing infinitely
+	if sw.buf.Len() > bufLimit {
+		for sw.buf.Len() > 0 {
+			_, err := sw.buf.WriteTo(sw.w)
+			if err != nil {
+				return err
+			}
+		}
+		sw.buf.Reset()
+	}
+
+	return nil
 }
 
 func (sw *StreamEncoder) Close() error {
 	// Handle case of EncodeRow never called
-	if sw.first {
+	if sw.first && sw.array {
 		err := sw.buf.WriteByte('[')
 		if err != nil {
 			return err
 		}
 	}
-	err := sw.buf.WriteByte(']')
+
+	if sw.array {
+		if err := sw.buf.WriteByte(']'); err != nil {
+			return err
+		}
+	}
 
 	for sw.buf.Len() > 0 {
 		_, err := sw.buf.WriteTo(sw.w)
@@ -121,7 +153,7 @@ func (sw *StreamEncoder) Close() error {
 		}
 	}
 
-	return err
+	return nil
 }
 
 func EncodeGeneric(out io.Writer, obj interface{}, marshalFn Marshaler) error {
