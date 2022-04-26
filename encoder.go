@@ -19,6 +19,7 @@ type StreamEncoder struct {
 	array         bool
 	quotedColumns map[string][]byte
 	marshalFn     Marshaler
+	bufLimit      int
 }
 
 func NewGenericStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *StreamEncoder {
@@ -29,6 +30,7 @@ func NewGenericStreamEncoder(w io.Writer, marshalFn Marshaler, array bool) *Stre
 		array:         array,
 		quotedColumns: map[string][]byte{},
 		marshalFn:     marshalFn,
+		bufLimit:      bufLimit,
 	}
 }
 
@@ -39,6 +41,11 @@ func (sw *StreamEncoder) SetFirst(first bool) *StreamEncoder {
 
 func (sw *StreamEncoder) SetArray(array bool) *StreamEncoder {
 	sw.array = array
+	return sw
+}
+
+func (sw *StreamEncoder) SetBufLimit(lim int) *StreamEncoder {
+	sw.bufLimit = lim
 	return sw
 }
 
@@ -118,7 +125,7 @@ func (sw *StreamEncoder) EncodeRow(row interface{}) error {
 	}
 
 	// Prevents buf from growing infinitely
-	if sw.buf.Len() > bufLimit {
+	if sw.buf.Len() > sw.bufLimit {
 		for sw.buf.Len() > 0 {
 			_, err := sw.buf.WriteTo(sw.w)
 			if err != nil {
